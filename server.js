@@ -162,6 +162,9 @@ app.post('/api/forgotForm', async (req, res) => {
         const { data, error } = await supabase.auth.admin.generateLink({
             type: 'recovery',
             email: email,
+            options: {
+                redirectTo: 'https://tuo-app.onrender.com/reset-password.html'
+            }
         });
 
         if (error) {
