@@ -158,10 +158,9 @@ app.post('/api/forgotForm', async (req, res) => {
 
     try {
         // Genera il link di reset tramite Supabase Admin
-        const { data, error: supabaseError } = await supabase.auth.admin.generateLink({
-            type: 'recovery',
-            email: email,
-        });
+       // Test rapido nei log per verificare se il server vede l'utente
+        const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+        console.log('Utenti trovati nel DB:', userData?.users?.map(u => u.email));
 
         if (supabaseError) {
             console.error('Errore Supabase:', supabaseError);
