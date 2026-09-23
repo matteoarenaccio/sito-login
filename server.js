@@ -14,7 +14,7 @@ app.use(express.static('public'))
 
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEYY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Rotta base di test per Render
