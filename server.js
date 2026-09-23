@@ -140,42 +140,45 @@ app.post('/api/loginForm', async (req, res) => {
 });
 
 
-app.post('/api/forgotForm', async(req, res) =>{
+app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: 'L\'indirizzo email è obbligatorio.' });
-  }
-
-  try {
-    // Genera un link o un token di reset tramite Supabase
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-    });
-
-    if (error) {
-      console.error('Errore Supabase:', error);
-      return res.status(400).json({ error: error.message });
+    if (!email) {
+        return res.status(400).json({ error: 'L\'indirizzo email è obbligatorio.' });
     }
 
-    const resetLink = data.properties.action_link;
+    try {
+        const { data, error } = await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: email,
+        });
 
-    // Invia l'email con Resend
-    await resend.emails.send({
-      from: 'onboarding@resend.dev', // Sostituisci con il tuo dominio verificato in seguito
-      to: email,
-      subject: 'Ripristino della password',
-      html: `<p>Per reimpostare la tua password, clicca sul seguente link:</p><a href="${resetLink}">Ripristina Password</a>`
-    });
+        // Se l'email non è registrata su Supabase
+        if (error) {
+            console.warn(`Tentativo di reset per email non trovata: ${email}`);
+            // Mostriamo comunque un messaggio di successo per sicurezza e privacy
+            return res.status(200).json({ 
+                message: 'Se l\'indirizzo email è registrato, riceverai un link per il reset.' 
+            });
+        }
 
-    return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
-  } catch (err) {
-    console.error('Errore del server:', err);
-    return res.status(500).json({ error: 'Errore interno del server.' });
-  }
+        const resetLink = data.properties.action_link;
 
-})
+        // Invia l'email con Resend
+        await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: email,
+            subject: 'Ripristino della password',
+            html: `<p>Clicca sul seguente link per reimpostare la password:</p><a href="${resetLink}">Ripristina Password</a>`
+        });
+
+        return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
+
+    } catch (err) {
+        console.error('Errore del server:', err);
+        return res.status(500).json({ error: 'Errore interno del server.' });
+    }
+});
 
 app.listen(PORTA, () => {
     console.log(`Server avviato sulla porta ${PORTA}`);
