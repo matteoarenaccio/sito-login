@@ -140,7 +140,7 @@ app.post('/api/loginForm', async (req, res) => {
 });
 
 
-app.post('/api/forgot-password', async (req, res) => {
+app.post('/api/forgotForm', async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
