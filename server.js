@@ -150,26 +150,28 @@ app.post('/api/loginForm', async (req, res) => {
 
 
 app.post('/api/forgotForm', async (req, res) => {
-    const { email } = req.body;
+    // Pulisci l'email da spazi e maiuscole
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
     if (!email) {
         return res.status(400).json({ error: 'L\'indirizzo email è obbligatorio.' });
     }
 
     try {
-        // Genera il link di reset tramite Supabase Admin
-       // Test rapido nei log per verificare se il server vede l'utente
-        const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
-        console.log('Utenti trovati nel DB:', userData?.users?.map(u => u.email));
+        // 1. Genera il link di reset tramite Supabase Admin
+        const { data, error } = await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: email,
+        });
 
-        if (supabaseError) {
-            console.error('Errore Supabase:', supabaseError);
-            return res.status(400).json({ error: `Supabase: ${supabaseError.message}` });
+        if (error) {
+            console.error('Errore Supabase:', error.message);
+            return res.status(400).json({ error: `Supabase: ${error.message}` });
         }
 
         const resetLink = data.properties.action_link;
 
-        // Invia l'email con Nodemailer via Gmail
+        // 2. Invia l'email con Nodemailer tramite Gmail SMTP
         const mailOptions = {
             from: `"Supporto Mio Sito" <${process.env.GMAIL_USER}>`,
             to: email,
@@ -185,13 +187,13 @@ app.post('/api/forgotForm', async (req, res) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`Email di ripristino inviata con successo a: ${email}`);
+        console.log(`Email inviata con successo a: ${email}`);
 
         return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
 
     } catch (err) {
-        console.error('Errore durante l\'invio dell\'email:', err);
-        return res.status(500).json({ error: 'Errore interno del server durante l\'invio dell\'email.' });
+        console.error('Errore interno del server:', err);
+        return res.status(500).json({ error: 'Errore interno del server.' });
     }
 });
 
