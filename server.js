@@ -3,6 +3,15 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const { createClient } = require('@supabase/supabase-js');
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
 
 const app = express();
 const PORTA = process.env.PORT || 3000;
@@ -148,7 +157,7 @@ app.post('/api/forgotForm', async (req, res) => {
     }
 
     try {
-        // 1. Generazione del link con Supabase
+        // Genera il link di reset tramite Supabase Admin
         const { data, error: supabaseError } = await supabase.auth.admin.generateLink({
             type: 'recovery',
             email: email,
@@ -161,25 +170,29 @@ app.post('/api/forgotForm', async (req, res) => {
 
         const resetLink = data.properties.action_link;
 
-        // 2. Invio email con Resend
-        const { data: resendData, error: resendError } = await resend.emails.send({
-            from: 'onboarding@resend.dev',
+        // Invia l'email con Nodemailer via Gmail
+        const mailOptions = {
+            from: `"Supporto Mio Sito" <${process.env.GMAIL_USER}>`,
             to: email,
             subject: 'Ripristino della password',
-            html: `<p>Clicca sul seguente link per reimpostare la password:</p><a href="${resetLink}">Ripristina Password</a>`
-        });
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Ripristino Password</h2>
+                    <p>Hai richiesto il ripristino della password. Clicca sul pulsante in basso per procedere:</p>
+                    <a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Ripristina Password</a>
+                    <p style="margin-top: 20px; font-size: 12px; color: #777;">Se non hai richiesto tu il ripristino, ignora questa email.</p>
+                </div>
+            `
+        };
 
-        if (resendError) {
-            console.error('Errore Resend:', resendError);
-            return res.status(400).json({ error: `Resend: ${resendError.message}` });
-        }
+        await transporter.sendMail(mailOptions);
+        console.log(`Email di ripristino inviata con successo a: ${email}`);
 
-        console.log('Email inviata con successo via Resend:', resendData);
         return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
 
     } catch (err) {
-        console.error('Errore del server:', err);
-        return res.status(500).json({ error: 'Errore interno del server.' });
+        console.error('Errore durante l\'invio dell\'email:', err);
+        return res.status(500).json({ error: 'Errore interno del server durante l\'invio dell\'email.' });
     }
 });
 
