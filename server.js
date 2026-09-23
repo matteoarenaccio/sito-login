@@ -140,7 +140,7 @@ app.post('/api/loginForm', async (req, res) => {
 });
 
 
-app.post('/api/forgotForm', async (req, res) => {
+app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
@@ -148,30 +148,33 @@ app.post('/api/forgotForm', async (req, res) => {
     }
 
     try {
-        const { data, error } = await supabase.auth.admin.generateLink({
+        // 1. Generazione del link con Supabase
+        const { data, error: supabaseError } = await supabase.auth.admin.generateLink({
             type: 'recovery',
             email: email,
         });
 
-        // Se l'email non è registrata su Supabase
-        if (error) {
-            console.warn(`Tentativo di reset per email non trovata: ${email}`);
-            // Mostriamo comunque un messaggio di successo per sicurezza e privacy
-            return res.status(200).json({ 
-                message: 'Se l\'indirizzo email è registrato, riceverai un link per il reset.' 
-            });
+        if (supabaseError) {
+            console.error('Errore Supabase:', supabaseError);
+            return res.status(400).json({ error: `Supabase: ${supabaseError.message}` });
         }
 
         const resetLink = data.properties.action_link;
 
-        // Invia l'email con Resend
-        await resend.emails.send({
+        // 2. Invio email con Resend
+        const { data: resendData, error: resendError } = await resend.emails.send({
             from: 'onboarding@resend.dev',
             to: email,
             subject: 'Ripristino della password',
             html: `<p>Clicca sul seguente link per reimpostare la password:</p><a href="${resetLink}">Ripristina Password</a>`
         });
 
+        if (resendError) {
+            console.error('Errore Resend:', resendError);
+            return res.status(400).json({ error: `Resend: ${resendError.message}` });
+        }
+
+        console.log('Email inviata con successo via Resend:', resendData);
         return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
 
     } catch (err) {
