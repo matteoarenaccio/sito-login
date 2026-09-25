@@ -1,65 +1,49 @@
-document.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem("token");
-            const authButtons = document.getElementById("authButtons");
-            const welcomeHeading = document.getElementById("welcomeHeading");
-            const heroCta = document.getElementById("heroCta");
+document.addEventListener('DOMContentLoaded'), () => {
 
-            if (token) {
-                const utente = localStorage.getItem("utente") || "Utente";
-                welcomeHeading.innerHTML = `<i class="fa-solid fa-hand-wave me-2 text-warning"></i>Bentornato, ${utente}!`;
+const SUPABASE_URL = 'https://avtxzwmvhygnrsogulbr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_L0f6pyFEmiJRKWn7w2qHOg_wl47Amtc';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                authButtons.innerHTML = `
-                    <span class="text-white me-3 fw-bold"><i class="fa-solid fa-user-check me-1"></i>Ciao, ${utente}</span>
-                    <button id="logoutBtn" class="btn btn-outline-danger">
-                        <i class="fa-solid fa-right-from-bracket me-1"></i>Logout
-                    </button>
-                `;
+const form = document.getElementById('loginForm') || document.querySelector('form');
+const emailInput = document.getElementById('email') || form.querySelector('input[type="email"]');
+const passwordInput = document.getElementById('password') || form.querySelector('input[type="password"]');
+const btnSubmit = form.querySelector('button[type="submit"]');
 
-                heroCta.innerHTML = `
-                    <p class="text-success fw-bold"><i class="fa-solid fa-circle-check me-2"></i>Sei autenticato nel sistema.</p>
-                `;
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-                document.getElementById("logoutBtn").addEventListener("click", () => {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("utente");
-                    window.location.reload();
-                });
-            }
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
-    const loginForm = document.getElementById('loginForm');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const messErroreLogin = document.getElementById('messErroreLogin')
-            messErroreLogin.textContent = "";
-
-            try {
-                const risposta = await fetch('https://sito-backend.onrender.com/api/loginForm', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const risultato = await risposta.json();
-
-                if (risultato.success) {
-                    localStorage.setItem('utenteLoggato', JSON.stringify(risultato.user));
-                    window.location.href = 'dashboard.html';
-                } else {
-                    messErroreLogin.textContent = risultato.message;
-                }
-            } catch (errore) {
-                console.error('Errore durante la richiesta di login:', errore);
-            }
-        });
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Accesso in corso...';
     }
-    
+
+    try {
+        // Accesso con email e password
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            console.error('Errore login:', error);
+            alert('Credenziali non valide o errore: ' + error.message);
+        } else {
+            console.log('Login effettuato con successo!', data.user);
+            // Supabase memorizza la sessione in automatico nel LocalStorage!
+            window.location.href = '/dashboard.html'; // Cambia con la tua pagina protetta
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Errore di connessione.');
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Accedi';
+        }
+    }
 });
 
 function togglePassword() {
@@ -75,4 +59,5 @@ function togglePassword() {
     icon.classList.remove('fa-eye-slash');
     icon.classList.add('fa-eye');
   }
+}
 }
