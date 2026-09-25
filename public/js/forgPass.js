@@ -1,60 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const forgotForm = document.getElementById("forgotForm");
-    const emailInput = document.getElementById("email");
-    const submitBtn = document.getElementById("submitBtn");
-    const feedbackMessage = document.getElementById("feedbackMessage");
- 
+    const form = document.getElementById('forgotForm');
+const emailInput = document.getElementById('email');
+const btnSubmit = document.getElementById('btnSubmit');
+const statusMessage = document.getElementById('statusMessage');
 
-    forgotForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        const email = emailInput.value.trim();
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = 'Invio in corso...';
+    statusMessage.className = 'message';
+    statusMessage.textContent = '';
 
-        if (!email) {
-            mostraMessaggio("Inserisci un indirizzo email valido.", "text-danger");
-            return;
+    try {
+        const res = await fetch('/api/forgotForm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput.value })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            statusMessage.className = 'message success';
+            statusMessage.textContent = data.message;
+            form.reset();
+        } else {
+            statusMessage.className = 'message error';
+            statusMessage.textContent = data.error || 'Si è verificato un errore.';
         }
-
-        // Disabilita il pulsante durante l'invio
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Invio in corso...";
-        mostraMessaggio("", "");
-
-        try {
-            const response = await fetch(`https://sito-backend.onrender.com/api/forgotForm`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ email })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                mostraMessaggio(
-                    data.message || "Se l'email è registrata, riceverai a breve un link di recupero.", 
-                    "text-success fw-bold"
-                );
-                forgotForm.reset();
-            } else {
-                mostraMessaggio(
-                    data.error || "Si è verificato un errore. Riprova più tardi.", 
-                    "text-warning"
-                );
-            }
-        } catch (error) {
-            console.error("Errore di connessione:", error);
-            mostraMessaggio("Impossibile contattare il server. Controlla la tua connessione.", "text-danger");
-        } finally {
-            // Riabilita il pulsante
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Invia Link";
-        }
-    });
-
-    function mostraMessaggio(testo, classeColore) {
-        feedbackMessage.className = `mt-3 text-center small ${classeColore}`;
-        feedbackMessage.textContent = testo;
+    } catch (err) {
+        statusMessage.className = 'message error';
+        statusMessage.textContent = 'Errore di connessione al server.';
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Invia link di recupero';
     }
+});
 });

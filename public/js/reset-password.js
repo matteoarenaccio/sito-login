@@ -1,34 +1,35 @@
 document.addEventListener('DOMContentLoaded'), () => {
 // Inizializza Supabase nel frontend con la chiave anonima (ANON_KEY)
-const SUPABASE_URL = 'https://tuoprogetto.supabase.co';
-const SUPABASE_ANON_KEY = 'la_tua_anon_key_pubblica';
+// Configurazione chiavi pubbliche Supabase
+const SUPABASE_URL = 'https://avtxzwmvhygnrsogulbr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_L0f6pyFEmiJRKWn7w2qHOg_wl47Amtc';
+
+// window.supabase è disponibile grazie al tag script CDN caricato prima
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Al caricamento della pagina, Supabase legge automaticamente il token nell'URL
-window.addEventListener('DOMContentLoaded', async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
+const form = document.getElementById('resetForm');
+const newPasswordInput = document.getElementById('newPassword');
+const statusMessage = document.getElementById('statusMessage');
 
-    if (error || !session) {
-        alert('Il link di ripristino è scaduto o non è valido. Richiedine uno nuovo.');
-        window.location.href = '/forgot-password.html'; // reindirizza al form di richiesta
-    }
-});
-
-// Gestione dell'invio del modulo
-document.getElementById('reset-form').addEventListener('submit', async (e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const newPassword = document.getElementById('new-password').value;
+    statusMessage.className = 'message';
 
-    // Aggiorna la password dell'utente usando la sessione temporanea aperta dal link
+    const password = newPasswordInput.value;
+
     const { data, error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: password
     });
 
     if (error) {
-        alert('Errore: ' + error.message);
+        statusMessage.className = 'message error';
+        statusMessage.textContent = 'Errore: ' + error.message;
     } else {
-        alert('Password aggiornata con successo! Ora puoi effettuare il login.');
-        window.location.href = '/login.html';
+        statusMessage.className = 'message success';
+        statusMessage.textContent = 'Password aggiornata con successo! Reindirizzamento al login...';
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 3000);
     }
 });
 

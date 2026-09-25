@@ -150,7 +150,7 @@ app.post('/api/loginForm', async (req, res) => {
 
 
 app.post('/api/forgotForm', async (req, res) => {
-    // Pulisci l'email da spazi e maiuscole
+    // 1. Pulisci l'email
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
     if (!email) {
@@ -158,50 +158,24 @@ app.post('/api/forgotForm', async (req, res) => {
     }
 
     try {
-        // 1. Genera il link di reset tramite Supabase Admin
-        const { data, error } = await supabase.auth.admin.generateLink({
-            type: 'recovery',
-            email: email,
-            options: {
-                redirectTo: 'https://tuo-app.onrender.com/reset-password.html'
-            }
+        // 2. Chiedi direttamente a Supabase di inviare l'email di recupero
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://tuo-app.onrender.com/reset-password.html'
         });
 
         if (error) {
             console.error('Errore Supabase:', error.message);
-            return res.status(400).json({ error: `Supabase: ${error.message}` });
+            return res.status(400).json({ error: error.message });
         }
 
-        const resetLink = data?.properties?.action_link;
-        if (!resetLink) {
-            return res.status(500).json({ error: "Impossibile generare il link di recupero." });
-        }
-
-        // 2. Invia l'email con Nodemailer tramite Gmail SMTP
-        const mailOptions = {
-            from: `"Supporto Mio Sito" <${process.env.GMAIL_USER}>`,
-            to: email,
-            subject: 'Ripristino della password',
-            html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h2>Ripristino Password</h2>
-                    <p>Hai richiesto il ripristino della password. Clicca sul pulsante in basso per procedere:</p>
-                    <a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Ripristina Password</a>
-                    <p style="margin-top: 20px; font-size: 12px; color: #777;">Se non hai richiesto tu il ripristino, ignora questa email.</p>
-                </div>
-            `
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log(`Email inviata con successo a: ${email}`);
-
-        return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
+        // 3. Risposta positiva al client
+        return res.status(200).json({ 
+            message: 'Email di ripristino inviata con successo!' 
+        });
 
     } catch (err) {
-        console.error('Errore durante l\'invio dell\'email:', err);
-        return res.status(500).json({ 
-            error: 'Errore interno del server durante l\'invio dell\'email.' 
-        });
+        console.error('Errore interno del server:', err);
+        return res.status(500).json({ error: 'Errore interno del server.' });
     }
 });
 
