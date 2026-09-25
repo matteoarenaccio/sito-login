@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             // Invio del reset password direttamente tramite Supabase
             const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: 'https://sito-frontend-nine.vercel.app/reset-password.html'
+                redirectTo: 'https://sito-frontend-nine.vercel.app/resetPass.html'
             });
 
             if (error) {
