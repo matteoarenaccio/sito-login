@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded'), () => {
+document.addEventListener('DOMContentLoaded', () => {
 
 const SUPABASE_URL = 'https://avtxzwmvhygnrsogulbr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_L0f6pyFEmiJRKWn7w2qHOg_wl47Amtc';
@@ -60,4 +60,4 @@ function togglePassword() {
     icon.classList.add('fa-eye');
   }
 }
-}
+})

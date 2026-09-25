@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded'), () => {
+document.addEventListener('DOMContentLoaded', () => {
 
     // --- GESTIONE REGISTRAZIONE ---
 const SUPABASE_URL = 'https://avtxzwmvhygnrsogulbr.supabase.co';
@@ -77,4 +77,4 @@ function togglePassword() {
     icon.classList.add('fa-eye');
   }
 }
-}
+})
