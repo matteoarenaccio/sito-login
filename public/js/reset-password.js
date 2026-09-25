@@ -62,10 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log('Password salvata con successo:', data);
                 showMsg('Password aggiornata con successo! Reindirizzamento al login...', false);
+
+                await supabase.auth.signOut();
                 
                 setTimeout(() => {
                     window.location.href = '/login.html'; // Cambia con la tua pagina di login
-                }, 2500);
+                }, 0);
             }
         } catch (err) {
             console.error('Errore imprevisto:', err);
