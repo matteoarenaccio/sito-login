@@ -160,7 +160,7 @@ app.post('/api/forgotForm', async (req, res) => {
     try {
         // 2. Chiedi direttamente a Supabase di inviare l'email di recupero
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://tuo-app.onrender.com/reset-password.html'
+            redirectTo: 'https://sito-frontend-nine.vercel.app/reset-password.html'
         });
 
         if (error) {
