@@ -154,7 +154,7 @@ app.post('/api/forgotForm', async (req, res) => {
     const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
 
     if (!email) {
-        return res.status(400).json({ error: 'L\'indirizzo email è obbligatorio.' });
+        return res.status(400).json({ error: "L'indirizzo email è obbligatorio." });
     }
 
     try {
@@ -172,7 +172,10 @@ app.post('/api/forgotForm', async (req, res) => {
             return res.status(400).json({ error: `Supabase: ${error.message}` });
         }
 
-        const resetLink = data.properties.action_link;
+        const resetLink = data?.properties?.action_link;
+        if (!resetLink) {
+            return res.status(500).json({ error: "Impossibile generare il link di recupero." });
+        }
 
         // 2. Invia l'email con Nodemailer tramite Gmail SMTP
         const mailOptions = {
@@ -195,8 +198,10 @@ app.post('/api/forgotForm', async (req, res) => {
         return res.status(200).json({ message: 'Email di ripristino inviata con successo!' });
 
     } catch (err) {
-        console.error('Errore interno del server:', err);
-        return res.status(500).json({ error: 'Errore interno del server.' });
+        console.error('Errore durante l\'invio dell\'email:', err);
+        return res.status(500).json({ 
+            error: 'Errore interno del server durante l\'invio dell\'email.' 
+        });
     }
 });
 
