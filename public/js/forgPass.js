@@ -13,7 +13,7 @@ form.addEventListener('submit', async (e) => {
     statusMessage.textContent = '';
 
     try {
-        const res = await fetch('/api/forgotForm', {
+        const res = await fetch('https://sito-backend.onrender.com/api/forgotForm', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: emailInput.value })
