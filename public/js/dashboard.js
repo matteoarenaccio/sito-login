@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  
+
     const SUPABASE_URL = 'https://avtxzwmvhygnrsogulbr.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_L0f6pyFEmiJRKWn7w2qHOg_wl47Amtc';
 

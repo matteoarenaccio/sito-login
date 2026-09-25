@@ -2,17 +2,34 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Nuova Password</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Reimposta Password</title>
 </head>
-<body>
-    <h2>Inserisci la nuova password</h2>
-    <form id="reset-form">
-        <input type="password" id="new-password" placeholder="Nuova password" required minlength="6" />
-        <button type="submit">Salva nuova password</button>
-    </form>
-
-    <!-- SDK Client di Supabase -->
+<body class="bg">
+    <div class="container">
+        <div class="row justify-content-center mt-4">
+            <div class="col-12 col-md-6 col-lg-4">
+                <form id="forgotForm" class="glass-form p-4 rounded text-white">
+                    <h3 class="fw-bold text-center mb-3 text-dark">Reimposta Passowrd</h3>
+                    <i><p class="small text-center mb-4">Inserisci la tua nuova password.</p></i>                    
+                    <div class="mb-3 password-wrapper">
+                        <input type="password" id="new-password" name="new-password" class="form-control" placeholder="Nuova Passowrd" required>
+                        <i class="fa-solid fa-eye position-absolute top-50 end-0 translate-middle-y me-3" id="toggleIcon" onclick="togglePassword()" style="cursor: pointer;"></i>
+                    </div>
+                    <button type="submit" class="btn btn-light w-100 fw-bold">
+                        Salva nuova passowrd
+                    </button>
+                        <div id="statusMessage"></div>
+                </form>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/reset-password.js"></script>
 </body>
 </html>
+
+
+ 
